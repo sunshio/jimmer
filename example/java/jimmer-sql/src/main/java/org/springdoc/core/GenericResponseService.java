@@ -27,33 +27,29 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import com.fasterxml.jackson.annotation.JsonView;
-import com.sun.tools.jdi.ArrayTypeImpl;
+import com.fasterxml.jackson.databind.JavaType;
 import io.swagger.v3.core.util.AnnotationsUtils;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.Operation;
-import io.swagger.v3.oas.models.media.Content;
-import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.*;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.babyfish.jimmer.client.meta.Metadata;
-import org.babyfish.jimmer.client.meta.Service;
+import org.babyfish.jimmer.client.FetchBy;
+import org.babyfish.jimmer.client.meta.*;
+import org.babyfish.jimmer.client.meta.impl.ImmutableObjectTypeImpl;
 import org.babyfish.jimmer.meta.ImmutableType;
 import org.springdoc.core.providers.JavadocProvider;
 
@@ -122,6 +118,9 @@ public class GenericResponseService {
 	 * The Controller advice infos.
 	 */
 	private final List<ControllerAdviceInfo> controllerAdviceInfos = new ArrayList<>();
+
+
+	private Map<MethodParameter, Schema> map = new HashMap<>();
 
 	/**
 	 * Instantiates a new Generic response builder.
@@ -478,7 +477,7 @@ public class GenericResponseService {
 	 */
 	private Content buildContent(Components components, MethodParameter methodParameter, String[] methodProduces, JsonView jsonView) {
 		Type returnType = getReturnType(methodParameter);
-		return buildContent(components, methodParameter.getParameterAnnotations(), methodProduces, jsonView, returnType);
+		return buildContent(components, methodParameter, methodProduces, jsonView, returnType);
 	}
 
 	/**
@@ -491,13 +490,19 @@ public class GenericResponseService {
 	 * @param returnType the return type
 	 * @return the content
 	 */
-	public Content buildContent(Components components, Annotation[] annotations, String[] methodProduces, JsonView jsonView, Type returnType) {
+	public Content buildContent(Components components, MethodParameter methodParameter, String[] methodProduces, JsonView jsonView, Type returnType) {
+		Annotation[] annotations = methodParameter.getParameterAnnotations();
 		Content content = new Content();
 		// if void, no content
 		if (isVoid(returnType))
 			return null;
 		if (ArrayUtils.isNotEmpty(methodProduces)) {
-			Schema<?> schemaN = calculateSchema(components, returnType, jsonView, annotations);
+			Schema<?> schemaN;
+			if(map.get(methodParameter)!=null){
+				schemaN = map.get(methodParameter);
+			}else {
+				schemaN = calculateSchema(components, returnType, jsonView, annotations);
+			}
 			if (schemaN != null) {
 				io.swagger.v3.oas.models.media.MediaType mediaType = new io.swagger.v3.oas.models.media.MediaType();
 				mediaType.setSchema(schemaN);
@@ -516,27 +521,22 @@ public class GenericResponseService {
 	 */
 	private Type getReturnType(MethodParameter methodParameter) {
 		Method method = methodParameter.getMethod();
-		Class<?> clazz = method.getReturnType();
-		boolean isJimmerEntity = ImmutableType.tryGet(clazz) != null;
 		Metadata metadata = SpringUtil.getBean(Metadata.class);
 
 
 
+		Map<Class<?>, Service> services = metadata.getServices();
 
-		if(isJimmerEntity) {
-			Map<Class<?>, Service> services = metadata.getServices();
-
-			Class<?> controllerClass = methodParameter.getDeclaringClass();
-			Service service = services.get(controllerClass);
-			List<org.babyfish.jimmer.client.meta.Operation> operations = service.getOperations();
-			for (org.babyfish.jimmer.client.meta.Operation operation : operations) {
-				Method rawMethod = operation.getRawMethod();
-				System.out.println("aaaaa"+ rawMethod);
-				System.out.println("bbbbb"+ rawMethod);
-				if(Objects.equals(rawMethod.toString(), method.toString())){
-					org.babyfish.jimmer.client.meta.Type type = operation.getType();
-					System.out.println(type);
-				}
+		Class<?> controllerClass = methodParameter.getDeclaringClass();
+		Service service = services.get(controllerClass);
+		List<org.babyfish.jimmer.client.meta.Operation> operations = service.getOperations();
+		for (org.babyfish.jimmer.client.meta.Operation operation : operations) {
+			Method rawMethod = operation.getRawMethod();
+			if(Objects.equals(rawMethod.toString(), method.toString())){
+				org.babyfish.jimmer.client.meta.Type type = operation.getType();
+				System.out.println(type);
+				Schema m =  docTypeToSchema(type);
+				map.put(methodParameter, m);
 			}
 		}
 
@@ -551,6 +551,66 @@ public class GenericResponseService {
 		}
 
 		return returnType;
+	}
+
+	private Schema docTypeToSchema(org.babyfish.jimmer.client.meta.Type type) {
+		Schema schema = createSchemaByDocType(type);
+		docTypeToSchema0(schema, type);
+		return schema;
+	}
+
+	private void docTypeToSchema0(Schema schema, org.babyfish.jimmer.client.meta.Type type) {
+		if(type instanceof ObjectType){
+			Map<String, Property> properties = ((ObjectType) type).getProperties();
+			properties.forEach((s, property) -> {
+				Schema childSchema = createSchemaByDocType(property.getType());
+				org.babyfish.jimmer.client.meta.Type elementType;
+				if(property.getType() instanceof ArrayType){
+					elementType = ((ArrayType) property.getType()).getElementType();
+				}else {
+					elementType = property.getType();
+				}
+				if(type != elementType) {
+					docTypeToSchema0(childSchema, property.getType());
+				}
+				schema.addProperty(s, childSchema);
+			});
+		}else if(type instanceof ArrayType){
+			org.babyfish.jimmer.client.meta.Type elementType = ((ArrayType) type).getElementType();
+
+
+			Schema schemaByDocType = createSchemaByDocType(elementType);
+
+				docTypeToSchema0(schemaByDocType, elementType);
+
+			((ArraySchema)schema).items(schemaByDocType);
+		}
+
+		else if(type instanceof SimpleType){
+			//TODO
+			//格式等
+		}
+	}
+
+	private Schema createSchemaByDocType(org.babyfish.jimmer.client.meta.Type type) {
+		if(type instanceof ObjectType){
+			return new ObjectSchema();
+		}else if(type instanceof ArrayType){
+			return new ArraySchema();
+		}else if(type instanceof SimpleType){
+			Class<?> javaType = ((SimpleType) type).getJavaType();
+			if(javaType == String.class){
+				return new StringSchema();
+			}else if(javaType == Date.class){
+				return new DateTimeSchema();
+			}
+			else if(javaType == LocalDate.class){
+				return new DateSchema();
+			}else if(javaType == LocalDateTime.class){
+				return new DateTimeSchema();
+			}
+		}
+		return new Schema();
 	}
 
 	/**
@@ -614,9 +674,16 @@ public class GenericResponseService {
 				&& ((isGeneric || methodAttributes.isMethodOverloaded()) && methodAttributes.isNoApiResponseDoc())) {
 			// Merge with existing schema
 			Content existingContent = apiResponse.getContent();
-			Type type = ReturnTypeParser.getType(methodParameter);
-			Schema<?> schemaN = calculateSchema(components, type,
-					methodAttributes.getJsonViewAnnotation(), methodParameter.getParameterAnnotations());
+
+
+			Schema<?> schemaN;
+			if(map.get(methodParameter) != null){
+				schemaN = map.get(methodParameter);
+			}else {
+				Type type = ReturnTypeParser.getType(methodParameter);
+				schemaN = calculateSchema(components, type,
+						methodAttributes.getJsonViewAnnotation(), methodParameter.getParameterAnnotations());
+			}
 			if (schemaN != null && ArrayUtils.isNotEmpty(methodAttributes.getMethodProduces()))
 				Arrays.stream(methodAttributes.getMethodProduces()).forEach(mediaTypeStr -> mergeSchema(existingContent, schemaN, mediaTypeStr));
 		}

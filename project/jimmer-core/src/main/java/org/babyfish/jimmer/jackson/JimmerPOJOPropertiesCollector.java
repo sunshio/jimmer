@@ -37,7 +37,7 @@ public class JimmerPOJOPropertiesCollector extends POJOPropertiesCollector {
                 return;
             }
             if (immutableType.getProps().get(m.getName()) != null) {
-                _property(props, m.getName()).addGetter(m, null, false, true, false);
+                _property(props, m.getName()).add
             }
         }
     }
