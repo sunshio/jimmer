@@ -20,7 +20,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.data:spring-data-redis'
     implementation 'org.springframework.kafka:spring-kafka:2.9.0'
-
+    implementation 'cn.hutool:hutool-all:5.8.18'
     implementation "org.babyfish.jimmer:jimmer-spring-boot-starter:${jimmerVersion}"
     annotationProcessor "org.babyfish.jimmer:jimmer-apt:${jimmerVersion}"
 

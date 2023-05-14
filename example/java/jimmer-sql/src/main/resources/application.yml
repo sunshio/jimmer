@@ -25,7 +25,7 @@ spring:
 jimmer:
   dialect: org.babyfish.jimmer.sql.dialect.H2Dialect
   offset-optimizing-threshold: 10
-  database-validation-mode: ERROR
+  database-validation-mode: none
   show-sql: true
   pretty-sql: true
   executor-context-prefixes:

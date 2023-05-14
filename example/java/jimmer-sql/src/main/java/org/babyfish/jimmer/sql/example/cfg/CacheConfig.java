@@ -66,7 +66,7 @@ public class CacheConfig {
             @Override
             public Cache<?, ?> createObjectCache(ImmutableType type) {
                 return new ChainCacheBuilder<>()
-                        .add(new CaffeineBinder<>(512, Duration.ofSeconds(1)))
+//                        .add(new CaffeineBinder<>(512, Duration.ofSeconds(1)))
                         .add(new RedisValueBinder<>(redisTemplate, objectMapper, type, Duration.ofMinutes(10)))
                         .build();
             }
@@ -134,7 +134,7 @@ public class CacheConfig {
         }
 
         return new ChainCacheBuilder<K, V>()
-                .add(new CaffeineBinder<>(512, Duration.ofSeconds(1)))
+//                .add(new CaffeineBinder<>(512, Duration.ofSeconds(1)))
                 .add(new RedisValueBinder<>(redisTemplate, objectMapper, prop, redisDuration))
                 .build();
     }
