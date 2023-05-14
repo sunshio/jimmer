@@ -570,7 +570,19 @@ public class GenericResponseService {
 				}else {
 					elementType = property.getType();
 				}
-				if(type != elementType) {
+				boolean c = false;
+
+				if(elementType instanceof ObjectType){
+					Map<String, Property> properties1 = ((ObjectType) elementType).getProperties();
+					List<org.babyfish.jimmer.client.meta.Type> types = properties1.values().stream().map(Property::getType).collect(Collectors.toList());
+					List<org.babyfish.jimmer.client.meta.Type> arrayTypes = types.stream().filter(t -> t instanceof ArrayType).collect(Collectors.toList());
+					types.addAll(arrayTypes.stream().map(a->{
+						return ((ArrayType)a).getElementType();
+					}).collect(Collectors.toList()));
+					c = types.contains(type);
+				}
+
+				if(type != elementType && !c) {
 					docTypeToSchema0(childSchema, property.getType());
 				}
 				schema.addProperty(s, childSchema);
