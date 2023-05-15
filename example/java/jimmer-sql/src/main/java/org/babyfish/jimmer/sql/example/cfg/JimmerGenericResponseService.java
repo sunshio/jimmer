@@ -106,10 +106,7 @@ public class JimmerGenericResponseService extends GenericResponseService {
             Service service = services.get(controllerClass);
             List<Operation> operations = service.getOperations();
             for (org.babyfish.jimmer.client.meta.Operation operation : operations) {
-                AnnotatedType annotatedReturnType = operation.getRawMethod().getAnnotatedReturnType();
-
-                AnnotatedType annotatedReturnType1 = method.getAnnotatedReturnType();
-                if(Objects.equals(annotatedReturnType1, annotatedReturnType)){
+                if(Objects.equals(operation.getRawMethod().toString(), method.toString())){
                     org.babyfish.jimmer.client.meta.Type type = operation.getType();
                     Schema m =  docTypeToSchema(type);
                     map.put(methodParameter.getParameterAnnotations(), m);
