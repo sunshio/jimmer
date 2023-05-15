@@ -35,9 +35,9 @@ public interface Book extends TenantAware {
             @OrderedProp("lastName")
     })
     @JoinTable(
-            name = "BOOK_AUTHOR_MAPPING",
-            joinColumnName = "BOOK_ID",
-            inverseJoinColumnName = "AUTHOR_ID"
+            name = "book_author_mapping",
+            joinColumnName = "book_id",
+            inverseJoinColumnName = "author_id"
     )
     List<Author> authors();
 
