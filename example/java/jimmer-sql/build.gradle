@@ -20,6 +20,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.data:spring-data-redis'
     implementation 'org.springframework.kafka:spring-kafka:2.9.0'
+    implementation 'com.github.xiaoymin:knife4j-openapi3-spring-boot-starter:4.1.0'
     implementation 'cn.hutool:hutool-all:5.8.18'
     implementation "org.babyfish.jimmer:jimmer-spring-boot-starter:${jimmerVersion}"
     annotationProcessor "org.babyfish.jimmer:jimmer-apt:${jimmerVersion}"
@@ -30,7 +31,7 @@ dependencies {
     implementation 'org.mapstruct:mapstruct:1.5.3.Final'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.3.Final'
 
-    implementation 'org.springdoc:springdoc-openapi-ui:1.6.13'
+//    implementation 'org.springdoc:springdoc-openapi-ui:1.6.13'
 
     runtimeOnly 'com.h2database:h2:2.1.212'
     runtimeOnly 'mysql:mysql-connector-java:8.0.30'

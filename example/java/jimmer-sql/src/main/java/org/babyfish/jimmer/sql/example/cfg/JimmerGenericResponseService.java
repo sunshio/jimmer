@@ -109,7 +109,7 @@ public class JimmerGenericResponseService extends GenericResponseService {
                 AnnotatedType annotatedReturnType = operation.getRawMethod().getAnnotatedReturnType();
 
                 AnnotatedType annotatedReturnType1 = method.getAnnotatedReturnType();
-                if(Objects.equals(annotatedReturnType1, annotatedReturnType) && method.toString().contains("findSimpleBooks")){
+                if(Objects.equals(annotatedReturnType1, annotatedReturnType)){
                     org.babyfish.jimmer.client.meta.Type type = operation.getType();
                     Schema m =  docTypeToSchema(type);
                     map.put(methodParameter.getParameterAnnotations(), m);
@@ -135,6 +135,10 @@ public class JimmerGenericResponseService extends GenericResponseService {
                         elementType = ((ArrayType) property.getType()).getElementType();
                     }else {
                         elementType = property.getType();
+                    }
+
+                    if(elementType instanceof NullableType){
+                        elementType = ((NullableType) elementType).getTargetType();
                     }
                     boolean c = false;
 

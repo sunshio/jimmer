@@ -1,5 +1,6 @@
 package org.babyfish.jimmer.sql.example.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.babyfish.jimmer.sql.*;
 import org.babyfish.jimmer.sql.example.model.common.TenantAware;
 import org.jetbrains.annotations.NotNull;
@@ -16,6 +17,8 @@ public interface Book extends TenantAware {
     long id();
 
     @Key
+    @Schema(description = "ssss")
+
     String name();
 
     @Key
