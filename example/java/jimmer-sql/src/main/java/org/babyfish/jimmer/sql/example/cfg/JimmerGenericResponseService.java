@@ -1,20 +1,20 @@
 package org.babyfish.jimmer.sql.example.cfg;
 
+import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.media.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.babyfish.jimmer.client.meta.*;
+
 import org.springdoc.core.*;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.ResolvableType;
 import org.springframework.stereotype.Component;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.*;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -128,6 +128,8 @@ public class JimmerGenericResponseService extends GenericResponseService {
         private void docTypeToSchema0(Schema schema, org.babyfish.jimmer.client.meta.Type type) {
             if(type instanceof ObjectType){
                 Map<String, Property> properties = ((ObjectType) type).getProperties();
+                Class<?> javaType = ((ObjectType) type).getJavaType();
+                Map<String, Field> fieldMap = ReflectUtil.getFieldMap(javaType);
                 properties.forEach((s, property) -> {
                     Schema childSchema = createSchemaByDocType(property.getType());
                     org.babyfish.jimmer.client.meta.Type elementType;
@@ -155,6 +157,26 @@ public class JimmerGenericResponseService extends GenericResponseService {
                     if(type != elementType && !c) {
                         docTypeToSchema0(childSchema, property.getType());
                     }
+                    io.swagger.v3.oas.annotations.media.Schema schemaAnno = null;
+
+                    if(type instanceof ImmutableObjectType){
+
+                        try {
+                            Method method = javaType.getMethod(s);
+                            schemaAnno = method.getAnnotation(io.swagger.v3.oas.annotations.media.Schema.class);
+                        } catch (NoSuchMethodException e) {
+
+                        }
+                    }else {
+                        Field field = fieldMap.get(s);
+                        if(field != null) {
+                            schemaAnno = field.getAnnotation(io.swagger.v3.oas.annotations.media.Schema.class);
+                        }
+                    }
+                    if(schemaAnno != null){
+                        childSchema.setDescription(schemaAnno.description());
+                    }
+
                     schema.addProperty(s, childSchema);
                 });
             }else if(type instanceof NullableType){
