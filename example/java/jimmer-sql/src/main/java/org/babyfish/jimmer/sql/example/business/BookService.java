@@ -38,8 +38,8 @@ public class BookService {
     }
 
     @GetMapping("/simpleList")
-    public List<@FetchBy("SIMPLE_FETCHER") Book> findSimpleBooks() {
-        return bookRepository.findAll(SIMPLE_FETCHER, BookProps.NAME, BookProps.EDITION.desc());
+    public List<@FetchBy("DEFAULT_FETCHER") Book> findSimpleBooks() {
+        return bookRepository.findAll(DEFAULT_FETCHER, BookProps.NAME, BookProps.EDITION.desc());
     }
 
     @GetMapping("/list")
