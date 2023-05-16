@@ -1,11 +1,9 @@
 spring:
   datasource:
-#    driver-class-name: com.mysql.cj.jdbc.Driver
-#    url: jdbc:mysql://140.246.16.207:3506/underwriting
-#    username: root
-#    password: Wcnm@12345
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:jimmer-sql;database_to_upper=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql:///big_data
+    username: root
+    password: root
 
 # You can download the typescript files generated for the client via
 #  http://localhost:8080/ts.zip.

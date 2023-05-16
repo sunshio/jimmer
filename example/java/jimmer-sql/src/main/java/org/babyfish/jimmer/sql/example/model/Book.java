@@ -6,6 +6,7 @@ import org.babyfish.jimmer.sql.example.model.common.TenantAware;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.validation.constraints.Null;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -24,6 +25,7 @@ public interface Book extends TenantAware {
     @Key
     int edition();
 
+    @Null
     BigDecimal price();
 
     @Nullable // Null property, Java API requires this annotation, but kotlin API does not
