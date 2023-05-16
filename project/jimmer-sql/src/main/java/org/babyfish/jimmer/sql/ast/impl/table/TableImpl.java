@@ -812,7 +812,7 @@ class TableImpl<E> extends AbstractDataManager<String, TableImplementor<?>> impl
             if (opposite != null) {
                 text = parent.toString() + '.' + opposite.getName();
             } else {
-                text = parent + "[← " + joinProp + ']';
+                text = parent + "[<- " + joinProp + ']';
             }
         } else {
             return parent.toString() + '.' + joinProp.getName();

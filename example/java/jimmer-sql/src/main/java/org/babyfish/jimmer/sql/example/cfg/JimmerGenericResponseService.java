@@ -3,6 +3,7 @@ package org.babyfish.jimmer.sql.example.cfg;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import com.fasterxml.jackson.annotation.JsonView;
+import io.swagger.v3.core.util.PrimitiveType;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.media.*;
 import org.apache.commons.lang3.ArrayUtils;
@@ -225,9 +226,7 @@ public class JimmerGenericResponseService extends GenericResponseService {
                 }else if(javaType == int.class || javaType == Integer.class){
                     return new IntegerSchema();
                 }else if(javaType == Long.class || javaType == long.class){
-                    IntegerSchema integerSchema = new IntegerSchema();
-                    integerSchema.setFormat("int64");
-                    return integerSchema;
+                    return PrimitiveType.LONG.createProperty();
                 }else if(javaType == BigDecimal.class){
                     return new NumberSchema();
                 }else if(javaType == boolean.class){

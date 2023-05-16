@@ -3,16 +3,16 @@
 
 spring:
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/big_data
-    username: root
-    password: root
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql:///big_data
+      username: root
+      password: Wcnm@12345
   redis:
     host: localhost
     port: 6379
   kafka:
     consumer:
-      bootstrap-servers: localhost:4003
+      bootstrap-servers: localhost:9092
       group-id: jimmer-demo/sql
       enable-auto-commit: false
       auto-offset-reset: latest
