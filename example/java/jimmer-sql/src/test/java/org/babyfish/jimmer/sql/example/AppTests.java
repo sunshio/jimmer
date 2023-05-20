@@ -2,7 +2,10 @@ package org.babyfish.jimmer.sql.example;
 
 import io.swagger.v3.core.jackson.ModelResolver;
 import org.babyfish.jimmer.sql.JSqlClient;
+import org.babyfish.jimmer.sql.ast.query.Example;
+import org.babyfish.jimmer.sql.example.model.Book;
 import org.babyfish.jimmer.sql.example.model.BookDraft;
+import org.babyfish.jimmer.sql.example.model.BookTable;
 import org.babyfish.jimmer.sql.example.model.input.BookInput;
 import org.babyfish.jimmer.sql.meta.DatabaseNamingStrategy;
 import org.babyfish.jimmer.sql.runtime.DefaultDatabaseNamingStrategy;
@@ -25,12 +28,11 @@ public class AppTests {
 
     @Test
     public void test() {
-        sqlClient.getEntities().save(BookDraft.$.produce(book->{
-            book.setName("11");
-            book.setEdition(1);
-            book.setPrice(null);
-            book.setAuthorIds(new ArrayList<>());
-//            book.set
-        }));
+        sqlClient.createQuery(BookTable.$).where(BookTable.$.eq(Example.of(BookDraft.$.produce(book->{
+            book.applyStore(store->{
+//                store.setId(1);
+               store.setName("111111111");
+            });
+        })))).select(BookTable.$).execute();
     }
 }

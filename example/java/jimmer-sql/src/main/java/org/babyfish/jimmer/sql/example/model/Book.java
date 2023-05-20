@@ -18,15 +18,13 @@ public interface Book extends TenantAware {
     long id();
 
     @Key
-    @Schema(description = "ssss")
-
     String name();
 
     @Key
     int edition();
 
     @Null
-    BigDecimal price();
+    Double price();
 
     @Nullable // Null property, Java API requires this annotation, but kotlin API does not
     @ManyToOne
